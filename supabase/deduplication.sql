@@ -20,3 +20,4 @@ begin
   return is_duplicate;
 end;
 $$;
+

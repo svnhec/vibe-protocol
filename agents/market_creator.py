@@ -32,18 +32,27 @@ def generate_markets():
     url = "https://api.perplexity.ai/chat/completions"
     
     prompt = """
-    Identify 3 currently trending, controversial, or viral topics (1 Pop Culture, 1 Tech/Crypto, 1 Global News) from TODAY.
-    Convert each into a binary YES/NO betting market question.
+    Identify 7 currently trending, controversial, or viral topics from TODAY across these categories:
+    1. Pop Culture / Celebrities
+    2. Tech / AI
+    3. Crypto / Web3
+    4. Global News / Politics
+    5. Sports (NBA, NFL, Soccer, etc.)
+    6. Science / Space
+    7. Finance / Stocks / Economy
+
+    Convert each into a specific, binary YES/NO betting market question with a clear resolution date.
     
     Return ONLY a JSON array with this structure:
     [
       {
-        "question": "Will [Event] happen by [Date]?",
-        "category": "Pop Culture",
-        "resolution_source": "http://example.com",
+        "question": "Will [Specific Event] happen by [Specific Date]?",
+        "category": "Sports",
+        "resolution_source": "http://espn.com or relevant site",
         "days_until_expiration": 3
       }
     ]
+    Make questions SPECIFIC (include names, numbers, dates). Avoid vague terms like "major" or "significant".
     """
 
     payload = {
@@ -148,17 +157,34 @@ def process_market(market_data):
     days = market_data.get("days_until_expiration", 7)
     expiration = (datetime.utcnow() + timedelta(days=days)).isoformat()
 
-    # Placeholders
+    # Category Images (Expanded)
     category_images = {
         "Pop Culture": "https://images.unsplash.com/photo-1514525253440-b393452e8d26?auto=format&fit=crop&w=1000",
+        "Celebrities": "https://images.unsplash.com/photo-1514525253440-b393452e8d26?auto=format&fit=crop&w=1000",
         "Tech": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1000",
+        "AI": "https://images.unsplash.com/photo-1677442135136-760c813028c4?auto=format&fit=crop&w=1000",
         "Crypto": "https://images.unsplash.com/photo-1518546305927-5a555bb7020d?auto=format&fit=crop&w=1000",
-        "Global News": "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=1000"
+        "Web3": "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=1000",
+        "Global News": "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=1000",
+        "Politics": "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?auto=format&fit=crop&w=1000",
+        "Sports": "https://images.unsplash.com/photo-1461896836934- voices-a56b0d?auto=format&fit=crop&w=1000",
+        "NBA": "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1000",
+        "NFL": "https://images.unsplash.com/photo-1566577739112-5180d4bf9390?auto=format&fit=crop&w=1000",
+        "Soccer": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1000",
+        "Science": "https://images.unsplash.com/photo-1507413245164-6160d8298b31?auto=format&fit=crop&w=1000",
+        "Space": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=1000",
+        "Finance": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1000",
+        "Stocks": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1000",
+        "Economy": "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=1000"
     }
     cat = market_data["category"]
-    image_url = category_images.get(cat, category_images["Global News"])
-    if "Crypto" in cat: image_url = category_images["Crypto"]
-    if "Tech" in cat: image_url = category_images["Tech"]
+    
+    # Smart matching: find key in category name
+    image_url = category_images.get("Global News")  # Default
+    for key in category_images:
+        if key.lower() in cat.lower():
+            image_url = category_images[key]
+            break
 
     new_market = {
         "question": question,
