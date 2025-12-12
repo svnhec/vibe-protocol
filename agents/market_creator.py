@@ -140,9 +140,12 @@ def process_market(market_data):
 
     # 3. CHECK FOR DUPLICATES
     # We ask DB: "Is there anything 85% similar to this?"
+    # Convert embedding list to PostgreSQL vector string format: [1,2,3]
+    embedding_str = "[" + ",".join(str(x) for x in embedding) + "]"
+    
     try:
         response = supabase.rpc("check_duplicate_market", {
-            "new_embedding": embedding, 
+            "new_embedding": embedding_str, 
             "match_threshold": 0.85
         }).execute()
         
@@ -151,7 +154,7 @@ def process_market(market_data):
             print(f"🛑 DUPLICATE DETECTED: {question}")
             return
     except Exception as e:
-        print(f"⚠️ Deduplication check failed: {e}")
+        print(f"⚠️ Deduplication check failed (continuing anyway): {e}")
 
     # 4. SAVE TO DB
     days = market_data.get("days_until_expiration", 7)
